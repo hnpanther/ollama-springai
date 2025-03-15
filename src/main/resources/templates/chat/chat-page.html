@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه چت</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container {
+            width: 400px;
+            max-width: 100%;
+            margin: 50px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .chat-box {
+            height: 300px;
+            padding: 20px;
+            overflow-y: scroll;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-input-container {
+            padding: 10px;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .chat-input {
+            width: 85%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .send-btn {
+            width: 10%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .send-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e1f5fe;
+            max-width: 70%;
+            clear: both;
+        }
+
+        .message.user {
+            background-color: #e0f7fa;
+            float: right;
+        }
+
+        .message.bot {
+            background-color: #fff3e0;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        چت با ربات
+    </div>
+    <div class="chat-box" id="chat-box">
+        <!-- پیام‌ها اینجا نمایش داده می‌شوند -->
+    </div>
+    <div class="chat-input-container">
+        <input type="text" id="message-input" class="chat-input" placeholder="پیام خود را وارد کنید...">
+        <button class="send-btn" onclick="sendMessage()">ارسال</button>
+    </div>
+</div>
+
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script>
+    function sendMessage() {
+        var input = document.getElementById('message-input');
+        var chatBox = document.getElementById('chat-box');
+        var messageText = input.value.trim();
+
+        if (messageText === "") return;
+
+
+
+        // نمایش پیام کاربر
+        var userMessage = document.createElement('div');
+        userMessage.classList.add('message', 'user');
+        userMessage.innerText = messageText;
+        chatBox.appendChild(userMessage);
+
+        // پاک کردن ورودی
+        input.value = "";
+
+        let contextPath = "[[@{/}]]";
+        $.ajax({
+            url: contextPath + "resource/chat/get-message",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ msg: messageText}),
+            complete: function (xhr, status) {
+                if(xhr.status === 200) {
+                    // alert("تغییر وضعیت با موفقیت انجام شد");
+                    var botMessage = document.createElement('div');
+                    botMessage.classList.add('message', 'bot');
+                    botMessage.innerText = "پیام ربات: " + xhr.responseText;
+                    chatBox.appendChild(botMessage);
+
+                    // اسکرول به پایین
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                } else {
+                    alert(xhr.responseText);
+                }
+            }
+        });
+
+
+        // اسکرول به پایین
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
